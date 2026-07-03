@@ -1,0 +1,15 @@
+# Compilados y dependencias
+/dist
+/tmp
+/out-tsc
+/node_modules
+
+# IDEs y sistema
+.idea/
+.vscode/
+.DS_Store
+
+# Misc
+/coverage
+npm-debug.log
+yarn-error.log
