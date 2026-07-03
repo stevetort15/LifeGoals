@@ -1,0 +1,41 @@
+# Workflow del Reto LifeGoals: construye la app Angular, crea la imagen Docker
+# con Apache (httpd) y la publica automáticamente en Docker Hub. - Steve Tort
+name: Angular_DockerImage
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  angular_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Node 20.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 20.x
+
+      - name: Instalar dependencias
+        run: npm install
+
+      - name: Build de producción
+        run: npm run build
+
+      - name: Login a Docker Hub
+        run: docker login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Crear contenedor base con Apache
+        run: docker run -d --name http_base httpd
+
+      - name: Copiar el sitio al contenedor
+        run: docker cp dist/lifegoals/browser/. http_base:/usr/local/apache2/htdocs
+
+      - name: Crear imagen con el proyecto
+        run: docker commit --change "ENV MODEL_NAME http_base" http_base ${{ secrets.DOCKER_USER }}/lifegoals:latest
+
+      - name: Publicar imagen en Docker Hub
+        run: docker push ${{ secrets.DOCKER_USER }}/lifegoals:latest
